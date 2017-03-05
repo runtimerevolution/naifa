@@ -1,8 +1,10 @@
 # Naifa
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/naifa`. To experiment with that code, run `bin/console` for an interactive prompt.
+## Description
 
-TODO: Delete this and the text above, and describe your gem
+Naifa is a tool aimed at providing a collection of commands that simplify the development workflow.
+This is still a WIP and it may have some rough edges, so please be sure to test it in a safe environment before using it. We are not responsible for any data that you may loose while using it.
+This also means that features and even commands may changes in the future, so please read the [changelog](CHANGELOG.md) on every update to be aware of the changes and please test it before using it with production data/environments.
 
 ## Installation
 
@@ -20,9 +22,170 @@ Or install it yourself as:
 
     $ gem install naifa
 
+After the gem is installed run the following command to initialize the configuration file in your project
+
+    $ naifa init
+
+This command will create a file .naifa in your project folder with the default settings as if you didn't had a settings file.
+
+You should now update some of the settings to meet your app configurations.
+
 ## Usage
 
-TODO: Write usage instructions here
+The .naifa file contains settings that will have an influence in the available command options.
+
+The current default settings are the following:
+```
+---
+version: 1.0
+db:
+  plugin: :postgres
+  settings:
+    filename: db_backup
+    backup:
+      path: "./data/db_dumps"
+      db_name: ''
+      environment: :staging
+      production:
+        type: :heroku
+      staging:
+        type: :heroku
+      development:
+        type: :docker
+        app_name: db
+        database: ''
+        username: "\\$POSTGRES_USER"
+        path: "/db_dumps/"
+    restore:
+      path: "./data/db_dumps"
+      environment: :development
+      staging:
+        type: :heroku
+      development:
+        type: :docker
+        app_name: db
+        database: ''
+        username: "\\$POSTGRES_USER"
+        path: "/db_dumps/"
+```
+
+Taking this into account, you'll be able to run the following commands
+
+### sync
+
+```
+$ naifa sync db
+```
+
+This will sync your staging postgres db in heroku to your development postgres in docker
+
+```
+$ naifa sync db production
+```
+
+This will sync your production postgres db in heroku to your development postgres in docker
+
+### backup
+
+```
+$ naifa backup db
+```
+
+This will backup your staging postgres db in heroku to './data/db_dumps/db_backup'
+
+```
+$ naifa backup db production
+```
+
+This will backup your postgres postgres db in heroku to './data/db_dumps/db_backup'
+
+### restore
+
+```
+$ naifa restore db
+```
+
+This will restore the backup in './data/db_dumps/db_backup' to your development postgres
+
+## Advanced
+
+Imagine that you have 2 databases with different settings and configurations
+You can update you configuration file by adding another entry like in the example bellow
+
+```
+---
+version: 1.0
+db:
+  plugin: :postgres
+  settings:
+    filename: db_backup
+    backup:
+      path: "./data/db_dumps"
+      db_name: ''
+      environment: :staging
+      production:
+        type: :heroku
+      staging:
+        type: :heroku
+      development:
+        type: :docker
+        app_name: db
+        database: dev_db
+        username: "\\$POSTGRES_USER"
+        path: "/db_dumps/"
+    restore:
+      path: "./data/db_dumps"
+      environment: :development
+      staging:
+        type: :heroku
+      development:
+        type: :docker
+        app_name: db
+        database: dev_db
+        username: "\\$POSTGRES_USER"
+        path: "/db_dumps/"
+db_local:
+  plugin: :postgres
+  settings:
+    filename: db_backup
+    backup:
+      path: "./data/db_dumps"
+      db_name: ''
+      environment: :staging
+      production:
+        type: :heroku
+      staging:
+        type: :heroku
+      development:
+        type: :local
+        database: dev_db1
+        username: postgres
+    restore:
+      path: "./data/db_dumps"
+      environment: :development
+      staging:
+        type: :heroku
+      development:
+        type: :local
+        database: dev_db1
+        username: postgres
+```
+
+This configuration will allow you to run the commands like this:
+
+```
+$ naifa sync db
+$ naifa sync db_local
+```
+
+## Roadmap
+
+* Add tests
+* Add documentation
+* Add AWS S3 sync between environments
+* Add MySQL sync, backup and restore
+* Add MongoDB sync, backup and restore
+* Rethink the commands to more dynamic depending on the plugin
 
 ## Development
 
@@ -32,10 +195,9 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/naifa.
+Bug reports and pull requests are welcome on GitHub at https://github.com/runtimerevolution/naifa.
 
 
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-

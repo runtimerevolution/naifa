@@ -9,9 +9,11 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Filipe Dias"]
   spec.email         = ["f.dias@runtime-revolution.com"]
 
-  spec.summary       = %q{Naifa is a portuguese street knife that with a little tools that will help in your day to day web development}
-  spec.description   = %q{Naifa is a portuguese street knife that with a little tools that will help in your day to day web development}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{Naifa is a tool aimed at providing a collection of commands that simplify the development workflow}
+  spec.description   = <<-EOF
+    Naifa is a tool aimed at providing a collection of commands that simplify the development workflow.
+  EOF
+  spec.homepage      = "https://github.com/runtimerevolution/naifa"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
