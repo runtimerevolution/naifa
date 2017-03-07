@@ -186,6 +186,7 @@ $ naifa sync db_local
 * Add MySQL sync, backup and restore
 * Add MongoDB sync, backup and restore
 * Rethink the commands to more dynamic depending on the plugin
+* Add logs and better error handling
 
 ## Development
 
