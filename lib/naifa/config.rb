@@ -16,6 +16,7 @@ module Naifa
         if !loaded_settings.nil? && loaded_settings[:version] != SETTINGS_VERSION
           raise 'Configuration file version is not supported. Please upgrade!'
         end
+        loaded_settings
       end || DEFAULT_SETTINGS
     end
 
