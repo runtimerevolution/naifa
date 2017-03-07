@@ -63,8 +63,20 @@ module Naifa
       return false if options[environment].nil?
 
       case options[environment][:type]
+      when :remote
+        command_line = build_backup_command(
+          options[environment][:host],
+          options[environment][:username] || options[:username],
+          options[environment][:database] || options[:database],
+          File.join(
+            options[environment][:path] || options[:path],
+            filename
+          )
+        )
+        Kernel.system(command_line)
       when :local
         command_line = build_backup_command(
+          'localhost',
           options[environment][:username] || options[:username],
           options[environment][:database] || options[:database],
           File.join(
@@ -93,8 +105,20 @@ module Naifa
       return false if options[environment].nil?
 
       case options[environment][:type]
+      when :remote
+        command_line = build_restore_command(
+          options[environment][:host],
+          options[environment][:username] || options[:username],
+          options[environment][:database] || options[:database],
+          File.join(
+            options[environment][:path] || options[:path],
+            filename
+          )
+        )
+        Kernel.system(command_line)
       when :local
         command_line = build_restore_command(
+          'localhost',
           options[environment][:username] || options[:username],
           options[environment][:database] || options[:database],
           File.join(
@@ -105,6 +129,7 @@ module Naifa
         Kernel.system(command_line)
       when :docker
         command_line = build_restore_command(
+          'localhost',
           options[environment][:username] || options[:username],
           options[environment][:database] || options[:database],
           File.join(
@@ -121,12 +146,12 @@ module Naifa
 
     private_class_method :_restore
 
-    def self.build_restore_command(username, database, filename)
-      "pg_restore --verbose --clean --no-acl --no-owner -h localhost -U #{username} -d #{database} #{filename}"
+    def self.build_restore_command(host, username, database, filename)
+      "pg_restore --verbose --clean --no-acl --no-owner -h #{host} -U #{username} -d #{database} #{filename}"
     end
 
-    def self.build_backup_command(username, database, filename)
-      "pg_dump -Fc -h localhost -U #{username} -d #{database} > #{filename}"
+    def self.build_backup_command(host, username, database, filename)
+      "pg_dump -Fc -h #{host} -U #{username} -d #{database} > #{filename}"
     end
 
     private_class_method :build_restore_command
