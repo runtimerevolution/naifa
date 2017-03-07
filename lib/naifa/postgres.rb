@@ -150,10 +150,13 @@ module Naifa
       "pg_restore --verbose --clean --no-acl --no-owner -h #{host} -U #{username} -d #{database} #{filename}"
     end
 
+    private_class_method :build_restore_command
+
     def self.build_backup_command(host, username, database, filename)
       "pg_dump -Fc -h #{host} -U #{username} -d #{database} > #{filename}"
     end
 
-    private_class_method :build_restore_command
+    private_class_method :build_backup_command
+
   end
 end
