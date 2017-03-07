@@ -42,25 +42,45 @@ module Naifa
 
     def self.restore(options={})
       filename = options.fetch(:filename, DEFAULT_SETTINGS[:filename])
-      _restore(filename, options.fetch(:restore, {}))
+      restore_settings = DEFAULT_SETTINGS[:restore].deep_merge(options.fetch(:restore, {}))
+
+      _restore(filename, restore_settings)
     end
 
     def self.backup(options={})
       filename = options.fetch(:filename, DEFAULT_SETTINGS[:filename])
-      _backup(filename, options.fetch(:backup, {}))
+      backup_settings = DEFAULT_SETTINGS[:backup].deep_merge(options.fetch(:backup, {}))
+
+      _backup(filename, backup_settings)
     end
 
     def self.sync(options={})
       filename = options.fetch(:filename, DEFAULT_SETTINGS[:filename])
-      res = _backup(filename, options.fetch(:backup, {}))
-      _restore(filename, options.fetch(:restore, {})) if res
+
+      backup_settings = DEFAULT_SETTINGS[:backup].deep_merge(options.fetch(:backup, {}))
+      restore_settings = DEFAULT_SETTINGS[:restore].deep_merge(options.fetch(:restore, {}))
+
+      return false if backup_settings[:environment].nil? ||
+                      backup_settings[backup_settings[:environment]].nil? ||
+                      restore_settings[:environment].nil? ||
+                      restore_settings[restore_settings[:environment]].nil?
+
+      if backup_settings[backup_settings[:environment]][:type] == :heroku &&
+         restore_settings[restore_settings[:environment]][:type] == :heroku
+
+         Heroku::Postgres.sync(
+           backup_settings[:environment],
+           restore_settings[:environment]
+         )
+      else
+        res = _backup(filename, backup_settings)
+        _restore(filename, restore_settings) if res
+      end
     end
 
-    def self._backup(filename, options={})
-      options = DEFAULT_SETTINGS[:backup].deep_merge(options)
-
+    def self._backup(filename, options)
       environment = options[:environment]
-      return false if options[environment].nil?
+      return false if environment.nil? || options[environment].nil?
 
       case options[environment][:type]
       when :remote
@@ -91,7 +111,7 @@ module Naifa
             options[environment][:path] || options[:path],
             filename
           ),
-          environment: environment
+          environment
         )
       end
     end
@@ -99,10 +119,8 @@ module Naifa
     private_class_method :_backup
 
     def self._restore(filename, options={})
-      options = DEFAULT_SETTINGS[:restore].deep_merge(options)
-
       environment = options[:environment]
-      return false if options[environment].nil?
+      return false if environment.nil? || options[environment].nil?
 
       case options[environment][:type]
       when :remote
