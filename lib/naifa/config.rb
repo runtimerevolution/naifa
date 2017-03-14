@@ -13,7 +13,7 @@ module Naifa
     def self.settings
       @settings ||= begin
         loaded_settings = YAML.load(File.read('.naifa')).with_indifferent_access if File.exists?('.naifa')
-        if !loaded_settings.nil? && loaded_settings[:version] != SETTINGS_VERSION
+        if !loaded_settings.nil? && loaded_settings.delete(:version) != SETTINGS_VERSION
           raise 'Configuration file version is not supported. Please upgrade!'
         end
         loaded_settings
