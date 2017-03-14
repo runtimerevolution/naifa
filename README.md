@@ -74,13 +74,13 @@ Taking this into account, you'll be able to run the following commands
 ### sync
 
 ```
-$ naifa sync db
+$ naifa db sync
 ```
 
 This will sync your staging postgres db in heroku to your development postgres in docker
 
 ```
-$ naifa sync db production
+$ naifa db sync production
 ```
 
 This will sync your production postgres db in heroku to your development postgres in docker
@@ -88,13 +88,13 @@ This will sync your production postgres db in heroku to your development postgre
 ### backup
 
 ```
-$ naifa backup db
+$ naifa db backup
 ```
 
 This will backup your staging postgres db in heroku to './data/db_dumps/db_backup'
 
 ```
-$ naifa backup db production
+$ naifa db backup production
 ```
 
 This will backup your postgres postgres db in heroku to './data/db_dumps/db_backup'
@@ -102,7 +102,7 @@ This will backup your postgres postgres db in heroku to './data/db_dumps/db_back
 ### restore
 
 ```
-$ naifa restore db
+$ naifa db restore
 ```
 
 This will restore the backup in './data/db_dumps/db_backup' to your development postgres
@@ -174,8 +174,8 @@ db_local:
 This configuration will allow you to run the commands like this:
 
 ```
-$ naifa sync db
-$ naifa sync db_local
+$ naifa db sync
+$ naifa db_local sync
 ```
 
 ## Roadmap
@@ -185,7 +185,7 @@ $ naifa sync db_local
 * Add AWS S3 sync between environments
 * Add MySQL sync, backup and restore
 * Add MongoDB sync, backup and restore
-* Rethink the commands to more dynamic depending on the plugin
+* -Rethink the commands to more dynamic depending on the plugin-
 * Add logs and better error handling
 
 ## Development

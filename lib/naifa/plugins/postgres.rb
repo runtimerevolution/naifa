@@ -1,9 +1,10 @@
 module Naifa
-  require 'naifa/utils'
 
   module Plugins
     class Postgres
+      require 'naifa/plugins/postgres/cli'
       require 'active_support/core_ext/hash/deep_merge'
+      require 'naifa/utils'
 
       DEFAULT_SETTINGS = {
         filename: 'db_backup',

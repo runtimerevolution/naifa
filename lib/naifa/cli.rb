@@ -1,5 +1,16 @@
 module Naifa
   require 'thor'
+
+  module PluginsCLI
+    Naifa::Config.settings.each do |sub_comm, settings|
+      class_eval <<-EORUBY
+        class #{sub_comm.to_s.capitalize} < #{Naifa::Plugins::registry[settings[:plugin]][:cli].to_s}
+          @settings_key = :#{sub_comm}
+        end
+      EORUBY
+    end
+  end
+
   class CLI < Thor
 
     desc "init <filename>", "Initializes <filename=.naifa> config file with all default settings"
@@ -7,40 +18,11 @@ module Naifa
       File.write(filename, Naifa::Config.generate_full_default_settings.to_h.to_yaml)
     end
 
-    desc "sync <what> <from> <to>", "Syncs <what> from <from> to <to>"
-    def sync(what, from=nil, to=nil)
-      what_config = Naifa::Config.settings[what.to_sym] || {}
-
-      options = {backup: {}, restore: {}}
-      options[:backup][:environment] = from unless from.nil?
-      options[:restore][:environment] = to unless to.nil?
-
-      case what_config[:plugin]
-      when :postgres
-        Naifa::Plugins::Postgres.sync(what_config.fetch(:settings,{}).deep_merge(options))
-      end
-    end
-
-    desc "backup <what> <from>", "Backup <what> from <from>"
-    def backup(what, from=nil)
-      what_config = Naifa::Config.settings[what.to_sym] || {}
-      options = from.nil? ? {} : {backup: {environment: from}}
-
-      case what_config[:plugin]
-      when :postgres
-        Naifa::Plugins::Postgres.backup(what_config.fetch(:settings,{}).deep_merge(options))
-      end
-    end
-
-    desc "restore <what> <to>", "Restore <what> to <to>"
-    def restore(what, to=nil)
-      what_config = Naifa::Config.settings[what.to_sym] || {}
-      options = to.nil? ? {} : {restore: {environment: to}}
-
-      case what_config[:plugin]
-      when :postgres
-        Naifa::Plugins::Postgres.restore(what_config.fetch(:settings,{}).deep_merge(options))
-      end
+    Naifa::Config.settings.each do |sub_comm, settings|
+      class_eval <<-EORUBY
+        desc "#{sub_comm} SUBCOMMAND ...ARGS", "#{Naifa::Plugins::registry[settings[:plugin]][:description].to_s}"
+        subcommand "#{sub_comm}", PluginsCLI::#{sub_comm.to_s.capitalize}
+      EORUBY
     end
   end
 end
