@@ -17,7 +17,7 @@ module Naifa
 
       case what_config[:plugin]
       when :postgres
-        Naifa::Postgres.sync(what_config.fetch(:settings,{}).deep_merge(options))
+        Naifa::Plugins::Postgres.sync(what_config.fetch(:settings,{}).deep_merge(options))
       end
     end
 
@@ -28,7 +28,7 @@ module Naifa
 
       case what_config[:plugin]
       when :postgres
-        Naifa::Postgres.backup(what_config.fetch(:settings,{}).deep_merge(options))
+        Naifa::Plugins::Postgres.backup(what_config.fetch(:settings,{}).deep_merge(options))
       end
     end
 
@@ -39,7 +39,7 @@ module Naifa
 
       case what_config[:plugin]
       when :postgres
-        Naifa::Postgres.restore(what_config.fetch(:settings,{}).deep_merge(options))
+        Naifa::Plugins::Postgres.restore(what_config.fetch(:settings,{}).deep_merge(options))
       end
     end
   end
