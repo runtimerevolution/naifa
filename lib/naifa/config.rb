@@ -17,10 +17,10 @@ module Naifa
           raise 'Configuration file version is not supported. Please upgrade!'
         end
         loaded_settings
-      end || DEFAULT_SETTINGS
+      end || {}
     end
 
-    def self.generate_full_default_settings
+    def self.generate_example_settings
       full_settings = {'version' => SETTINGS_VERSION}.with_indifferent_access
         .merge(DEFAULT_SETTINGS)
       full_settings[:db][:settings] = Naifa::Plugins::Postgres::DEFAULT_SETTINGS
