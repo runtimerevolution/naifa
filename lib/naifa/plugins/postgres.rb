@@ -12,13 +12,13 @@ module Naifa
       def self.restore(options={})
         filename = options.fetch(:filename, DEFAULT_FILENAME)
 
-        _restore(filename, options[:restore])
+        _restore(filename, options)
       end
 
       def self.backup(options={})
         filename = options.fetch(:filename, DEFAULT_FILENAME)
 
-        _backup(filename, options[:backup])
+        _backup(filename, options)
       end
 
       def self.sync(options={})
@@ -27,103 +27,112 @@ module Naifa
 
         backup_settings = options.fetch(:backup, {})
         restore_settings = options.fetch(:restore, {})
+        environments_settings = options.fetch(:environments, {})
 
         if backup_settings[:environment].blank? ||
-            backup_settings[backup_settings[:environment]].blank? ||
+            environments_settings[backup_settings[:environment]].blank? ||
             restore_settings[:environment].blank? ||
-            restore_settings[restore_settings[:environment]].blank?
+            environments_settings[restore_settings[:environment]].blank?
 
           raise Thor::Error, "Sync (Backup and Restore) environments are not defined"
         end
 
-        if backup_settings[backup_settings[:environment]][:type] == :heroku &&
-           restore_settings[restore_settings[:environment]][:type] == :heroku
+        if environments_settings[backup_settings[:environment]][:type] == :heroku &&
+           environments_settings[restore_settings[:environment]][:type] == :heroku
 
            Heroku::Postgres.sync(
              backup_settings[:environment],
              restore_settings[:environment]
            )
         else
-          _backup(filename, backup_settings)
-          _restore(filename, restore_settings)
+          _backup(filename, options)
+          _restore(filename, options)
         end
       end
 
       def self._backup(filename, options={})
         options ||= {}
-        environment = options[:environment]
-        raise Thor::Error, "Backup environment is not defined" if environment.nil? || options[environment].nil?
+        backup_settings = options[:backup]
+        environments_settings = options[:environments]
 
-        case options[environment][:type]
+        if backup_settings[:environment].blank? ||
+          environments_settings[backup_settings[:environment]].blank?
+
+          raise Thor::Error, "Backup environment is not defined"
+        end
+
+        environment_settings = environments_settings[backup_settings[:environment]]
+
+        case environment_settings[:type]
         when :remote
-          if options[environment][:host].blank? ||
-              (options[environment][:username].presence || options[:username].presence).blank? ||
-              (options[environment][:database].presence || options[:database].presence).blank? ||
-              (options[environment][:path].presence || options[:path].presence).blank?
+          if environment_settings[:host].blank? ||
+              environment_settings[:username].blank? ||
+              environment_settings[:database].blank? ||
+              (environment_settings[:path].presence || options[:path].presence).blank?
 
-            raise Thor::Error, "Backup remote environment #{environment} is not correctly configured"
+            raise Thor::Error, "Backup remote environment #{backup_settings[:environment]} is not correctly configured"
           end
 
           command_line = build_backup_command(
-            options[environment][:host],
-            options[environment][:username].presence || options[:username].presence,
-            options[environment][:database].presence || options[:database].presence,
+            environment_settings[:host],
+            environment_settings[:username],
+            environment_settings[:database],
             File.join(
-              options[environment][:path].presence || options[:path].presence,
+              environment_settings[:path].presence || options[:path].presence,
               filename
             )
           )
           Kernel.system(command_line)
         when :local
-          if (options[environment][:username].presence || options[:username].presence).blank? ||
-              (options[environment][:database].presence || options[:database].presence).blank? ||
-              (options[environment][:path].presence || options[:path].presence).blank?
+          if environment_settings[:username].blank? ||
+              environment_settings[:database].blank? ||
+              (environment_settings[:path].presence || options[:path].presence).blank?
 
-            raise Thor::Error, "Backup local environment #{environment} is not correctly configured"
+            raise Thor::Error, "Backup local environment #{backup_settings[:environment]} is not correctly configured"
           end
 
           command_line = build_backup_command(
             'localhost',
-            options[environment][:username].presence || options[:username].presence,
-            options[environment][:database].presence || options[:database].presence,
+            environment_settings[:username],
+            environment_settings[:database],
             File.join(
-              options[environment][:path].presence || options[:path].presence,
+              environment_settings[:path].presence || options[:path].presence,
               filename
             )
           )
           Kernel.system(command_line)
         when :heroku
-          if (options[environment][:path].presence || options[:path].presence).blank?
-            raise Thor::Error, "Backup heroku environment #{environment} is not correctly configured"
+          if (environment_settings[:path].presence || options[:path].presence).blank?
+            raise Thor::Error, "Backup heroku environment #{backup_settings[:environment]} is not correctly configured"
           end
 
           Heroku::Postgres.backup(
             File.join(
-              options[environment][:path].presence || options[:path].presence,
+              environment_settings[:path].presence || options[:path].presence,
               filename
             ),
-            environment
+            backup_settings[:environment]
           )
         when :docker
-          if (options[environment][:username].presence || options[:username].presence).blank? ||
-              (options[environment][:database].presence || options[:database].presence).blank? ||
-              (options[environment][:path].presence || options[:path].presence).blank? ||
-              options[environment][:app_name].blank?
+          if environment_settings[:username].blank? ||
+              environment_settings[:database].blank? ||
+              (environment_settings[:path].presence || options[:path].presence).blank? ||
+              environment_settings[:app_name].blank?
 
-            raise Thor::Error, "Restore docker environment #{environment} is not correctly configured"
+            raise Thor::Error, "Restore docker environment #{backup_settings[:environment]} is not correctly configured"
           end
 
           command_line = build_backup_command(
             'localhost',
-            options[environment][:username].presence || options[:username].presence,
-            options[environment][:database].presence || options[:database].presence,
+            environment_settings[:username],
+            environment_settings[:database],
             File.join(
-              options[environment][:path].presence || options[:path].presence,
+              environment_settings[:path].presence || options[:path].presence,
               filename
             )
           )
           Utils.docker_compose_exec_command(
-            options[environment][:app_name].presence,
+            environment_settings[:app_name].presence,
             command_line
           )
         else
@@ -135,67 +144,76 @@ module Naifa
 
       def self._restore(filename, options={})
         options ||= {}
-        environment = options[:environment]
-        raise Thor::Error, "Restore environment is not defined" if environment.nil? || options[environment].nil?
 
-        case options[environment][:type]
+        restore_settings = options[:restore]
+        environments_settings = options[:environments]
+
+        if restore_settings[:environment].blank? ||
+          environments_settings[restore_settings[:environment]].blank?
+
+          raise Thor::Error, "Restore environment is not defined"
+        end
+
+        environment_settings = environments_settings[restore_settings[:environment]]
+
+        case environment_settings[:type]
         when :remote
-          if options[environment][:host].blank? ||
-              (options[environment][:username].presence || options[:username].presence).blank? ||
-              (options[environment][:database].presence || options[:database].presence).blank? ||
-              (options[environment][:path].presence || options[:path].presence).blank?
+          if environment_settings[:host].blank? ||
+              environment_settings[:username].blank? ||
+              environment_settings[:database].blank? ||
+              (environment_settings[:path].presence || options[:path].presence).blank?
 
-            raise Thor::Error, "Restore remote environment #{environment} is not correctly configured"
+            raise Thor::Error, "Restore remote environment #{restore_settings[:environment]} is not correctly configured"
           end
 
           command_line = build_restore_command(
-            options[environment][:host],
-            options[environment][:username].presence || options[:username].presence,
-            options[environment][:database].presence || options[:database].presence,
+            environment_settings[:host],
+            environment_settings[:username],
+            environment_settings[:database],
             File.join(
-              options[environment][:path].presence || options[:path].presence,
+              environment_settings[:path].presence || options[:path].presence,
               filename
             )
           )
           Kernel.system(command_line)
         when :local
-          if (options[environment][:username].presence || options[:username].presence).blank? ||
-              (options[environment][:database].presence || options[:database].presence).blank? ||
-              (options[environment][:path].presence || options[:path].presence).blank?
+          if environment_settings[:username].blank? ||
+              environment_settings[:database].blank? ||
+              (environment_settings[:path].presence || options[:path].presence).blank?
 
-            raise Thor::Error, "Restore local environment #{environment} is not correctly configured"
+            raise Thor::Error, "Restore local environment #{restore_settings[:environment]} is not correctly configured"
           end
 
           command_line = build_restore_command(
             'localhost',
-            options[environment][:username].presence || options[:username].presence,
-            options[environment][:database].presence || options[:database].presence,
+            environment_settings[:username],
+            environment_settings[:database],
             File.join(
-              options[environment][:path] || options[:path],
+              environment_settings[:path] || options[:path],
               filename
             )
           )
           Kernel.system(command_line)
         when :docker
-          if (options[environment][:username].presence || options[:username].presence).blank? ||
-              (options[environment][:database].presence || options[:database].presence).blank? ||
-              (options[environment][:path].presence || options[:path].presence).blank? ||
-              options[environment][:app_name].blank?
+          if environment_settings[:username].blank? ||
+              environment_settings[:database].blank? ||
+              (environment_settings[:path].presence || options[:path].presence).blank? ||
+              environment_settings[:app_name].blank?
 
-            raise Thor::Error, "Restore docker environment #{environment} is not correctly configured"
+            raise Thor::Error, "Restore docker environment #{restore_settings[:environment]} is not correctly configured"
           end
 
           command_line = build_restore_command(
             'localhost',
-            options[environment][:username].presence || options[:username].presence,
-            options[environment][:database].presence || options[:database].presence,
+            environment_settings[:username],
+            environment_settings[:database],
             File.join(
-              options[environment][:path].presence || options[:path].presence,
+              environment_settings[:path].presence || options[:path].presence,
               filename
             )
           )
           Utils.docker_compose_exec_command(
-            options[environment][:app_name].presence,
+            environment_settings[:app_name],
             command_line
           )
         else

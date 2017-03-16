@@ -37,15 +37,13 @@ The .naifa file contains settings that will have an influence in the available c
 The current default settings are the following:
 ```
 ---
-version: 1.0
+version: 1.1
 db:
   plugin: :postgres
   settings:
     filename: db_backup
-    backup:
-      path: "./data/db_dumps"
-      db_name: ''
-      environment: :staging
+    path: "./data/db_dumps"
+    environments:
       production:
         type: :heroku
       staging:
@@ -56,17 +54,10 @@ db:
         database: ''
         username: "\\$POSTGRES_USER"
         path: "/db_dumps/"
+    backup:
+      environment: :staging
     restore:
-      path: "./data/db_dumps"
       environment: :development
-      staging:
-        type: :heroku
-      development:
-        type: :docker
-        app_name: db
-        database: ''
-        username: "\\$POSTGRES_USER"
-        path: "/db_dumps/"
 ```
 
 Taking this into account, you'll be able to run the following commands
@@ -114,15 +105,13 @@ You can update you configuration file by adding another entry like in the exampl
 
 ```
 ---
-version: 1.0
+version: 1.1
 db:
   plugin: :postgres
   settings:
     filename: db_backup
-    backup:
-      path: "./data/db_dumps"
-      db_name: ''
-      environment: :staging
+    path: "./data/db_dumps"
+    environments:
       production:
         type: :heroku
       staging:
@@ -130,28 +119,19 @@ db:
       development:
         type: :docker
         app_name: db
-        database: dev_db
+        database: ''
         username: "\\$POSTGRES_USER"
         path: "/db_dumps/"
+    backup:
+      environment: :staging
     restore:
-      path: "./data/db_dumps"
       environment: :development
-      staging:
-        type: :heroku
-      development:
-        type: :docker
-        app_name: db
-        database: dev_db
-        username: "\\$POSTGRES_USER"
-        path: "/db_dumps/"
 db_local:
   plugin: :postgres
   settings:
     filename: db_backup
-    backup:
-      path: "./data/db_dumps"
-      db_name: ''
-      environment: :staging
+    path: "./data/db_dumps"
+    environments:
       production:
         type: :heroku
       staging:
@@ -159,16 +139,13 @@ db_local:
       development:
         type: :local
         database: dev_db1
-        username: postgres
+        username: "\\$POSTGRES_USER"
+        password: pass
+        path: "/db_dumps/"
+    backup:
+      environment: :staging
     restore:
-      path: "./data/db_dumps"
       environment: :development
-      staging:
-        type: :heroku
-      development:
-        type: :local
-        database: dev_db1
-        username: postgres
 ```
 
 This configuration will allow you to run the commands like this:

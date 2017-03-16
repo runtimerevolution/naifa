@@ -3,7 +3,7 @@ module Naifa
     require 'yaml'
     require 'active_support/core_ext/hash/indifferent_access'
 
-    SETTINGS_VERSION = 1.0
+    SETTINGS_VERSION = 1.1
     DEFAULT_SETTINGS = {
       db: {
         :plugin => :postgres
