@@ -34,78 +34,103 @@ You should now update some of the settings to meet your app configurations.
 
 The .naifa file contains settings that will have an influence in the available command options.
 
-The current default settings are the following:
+The current default generated settings are the following:
 ```
 ---
-version: 1.0
+version: 1.1
 db:
   plugin: :postgres
   settings:
     filename: db_backup
-    backup:
-      path: "./data/db_dumps"
-      db_name: ''
-      environment: :staging
+    path: "./data/db_dumps"
+    environments:
       production:
         type: :heroku
+        remote: production
       staging:
         type: :heroku
+        remote: staging
       development:
         type: :docker
         app_name: db
         database: ''
         username: "\\$POSTGRES_USER"
         path: "/db_dumps/"
+    backup:
+      environment: :staging
     restore:
-      path: "./data/db_dumps"
       environment: :development
+s3:
+  plugin: :s3
+  settings:
+    environments:
+      production:
+        bucket: s3://production_bucket_name/
       staging:
-        type: :heroku
+        bucket: s3://staging_bucket_name/
       development:
-        type: :docker
-        app_name: db
-        database: ''
-        username: "\\$POSTGRES_USER"
-        path: "/db_dumps/"
+        bucket: s3://development_bucket_name/
+    sync:
+      origin: :staging
+      destination: :development
+      sync_options:
+      - "--delete"
+      - "--acl public-read"
 ```
 
 Taking this into account, you'll be able to run the following commands
 
-### sync
+### postgres sync
 
 ```
-$ naifa sync db
+$ naifa db sync
 ```
 
 This will sync your staging postgres db in heroku to your development postgres in docker
 
 ```
-$ naifa sync db production
+$ naifa db sync production
 ```
 
 This will sync your production postgres db in heroku to your development postgres in docker
 
-### backup
+### postgres backup
 
 ```
-$ naifa backup db
+$ naifa db backup
 ```
 
 This will backup your staging postgres db in heroku to './data/db_dumps/db_backup'
 
 ```
-$ naifa backup db production
+$ naifa db backup production
 ```
 
 This will backup your postgres postgres db in heroku to './data/db_dumps/db_backup'
 
-### restore
+### postgres restore
 
 ```
-$ naifa restore db
+$ naifa db restore
 ```
 
 This will restore the backup in './data/db_dumps/db_backup' to your development postgres
+
+### s3 sync
+
+```
+$ naifa s3 sync
+```
+
+This will sync your staging s3 bucket with your development s3 bucket
+
+```
+$ naifa s3 sync production staging
+```
+
+This will sync your production s3 bucket with your staging s3 bucket
+
+NOTE: sync_options allow you to specify [aws s3 sync](http://docs.aws.amazon.com/cli/latest/reference/s3/sync.html) command options.
 
 ## Advanced
 
@@ -114,78 +139,68 @@ You can update you configuration file by adding another entry like in the exampl
 
 ```
 ---
-version: 1.0
+version: 1.1
 db:
   plugin: :postgres
   settings:
     filename: db_backup
-    backup:
-      path: "./data/db_dumps"
-      db_name: ''
-      environment: :staging
+    path: "./data/db_dumps"
+    environments:
       production:
         type: :heroku
+        remote: production
       staging:
         type: :heroku
+        remote: staging
       development:
         type: :docker
         app_name: db
-        database: dev_db
+        database: ''
         username: "\\$POSTGRES_USER"
         path: "/db_dumps/"
+    backup:
+      environment: :staging
     restore:
-      path: "./data/db_dumps"
       environment: :development
-      staging:
-        type: :heroku
-      development:
-        type: :docker
-        app_name: db
-        database: dev_db
-        username: "\\$POSTGRES_USER"
-        path: "/db_dumps/"
 db_local:
   plugin: :postgres
   settings:
     filename: db_backup
-    backup:
-      path: "./data/db_dumps"
-      db_name: ''
-      environment: :staging
+    path: "./data/db_dumps"
+    environments:
       production:
         type: :heroku
+        remote: production
       staging:
         type: :heroku
+        remote: staging
       development:
         type: :local
         database: dev_db1
-        username: postgres
+        username: "\\$POSTGRES_USER"
+        password: pass
+        path: "/db_dumps/"
+    backup:
+      environment: :staging
     restore:
-      path: "./data/db_dumps"
       environment: :development
-      staging:
-        type: :heroku
-      development:
-        type: :local
-        database: dev_db1
-        username: postgres
 ```
 
 This configuration will allow you to run the commands like this:
 
 ```
-$ naifa sync db
-$ naifa sync db_local
+$ naifa db sync
+$ naifa db_local sync
 ```
 
 ## Roadmap
 
 * Add tests
 * Add documentation
-* Add AWS S3 sync between environments
+* -Add AWS S3 sync between environments-
 * Add MySQL sync, backup and restore
 * Add MongoDB sync, backup and restore
-* Rethink the commands to more dynamic depending on the plugin
+* -Rethink the commands to more dynamic depending on the plugin-
 * Add logs and better error handling
 
 ## Development

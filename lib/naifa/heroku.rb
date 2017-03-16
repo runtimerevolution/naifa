@@ -9,9 +9,7 @@ module Naifa
       end
 
       def self.sync(from=:production, to=:staging)
-        puts "Heroku Sync from: #{from} to: #{to}"
         res = capture(from)
-        # puts build_restore_command("`#{build_public_url_command(from)}`", to)
         Kernel.system(build_restore_command("`#{build_public_url_command(from)}`", to)) if res
       end
 
