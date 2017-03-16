@@ -7,10 +7,12 @@ module Naifa
         path: './data/db_dumps',
         environments: {
           production: {
-            type: :heroku
+            type: :heroku,
+            remote: 'production'
           },
           staging: {
-            type: :heroku
+            type: :heroku,
+            remote: 'staging'
           },
           development: {
             type: :docker,

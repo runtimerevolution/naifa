@@ -46,8 +46,10 @@ db:
     environments:
       production:
         type: :heroku
+        remote: production
       staging:
         type: :heroku
+        remote: staging
       development:
         type: :docker
         app_name: db
@@ -114,8 +116,10 @@ db:
     environments:
       production:
         type: :heroku
+        remote: production
       staging:
         type: :heroku
+        remote: staging
       development:
         type: :docker
         app_name: db
@@ -134,8 +138,10 @@ db_local:
     environments:
       production:
         type: :heroku
+        remote: production
       staging:
         type: :heroku
+        remote: staging
       development:
         type: :local
         database: dev_db1

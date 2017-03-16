@@ -41,8 +41,8 @@ module Naifa
            environments_settings[restore_settings[:environment]][:type] == :heroku
 
            Heroku::Postgres.sync(
-             backup_settings[:environment],
-             restore_settings[:environment]
+             environments_settings[backup_settings[:environment]][:remote].presence || backup_settings[:environment],
+             environments_settings[restore_settings[:environment]][:remote].presence || restore_settings[:environment]
            )
         else
           _backup(filename, options)
@@ -111,7 +111,7 @@ module Naifa
               environment_settings[:path].presence || options[:path].presence,
               filename
             ),
-            backup_settings[:environment]
+            environment_settings[:remote].presence || backup_settings[:environment]
           )
         when :docker
           if environment_settings[:username].blank? ||
