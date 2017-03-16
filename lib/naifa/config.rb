@@ -7,6 +7,9 @@ module Naifa
     DEFAULT_SETTINGS = {
       db: {
         :plugin => :postgres
+      },
+      s3: {
+        :plugin => :s3
       }
     }.with_indifferent_access.freeze
 
@@ -24,6 +27,7 @@ module Naifa
       full_settings = {'version' => SETTINGS_VERSION}.with_indifferent_access
         .merge(DEFAULT_SETTINGS)
       full_settings[:db][:settings] = Naifa::Plugins::Postgres::DEFAULT_SETTINGS
+      full_settings[:s3][:settings] = Naifa::Plugins::S3::DEFAULT_SETTINGS
       full_settings.to_hash
     end
 
