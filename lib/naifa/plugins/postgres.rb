@@ -104,6 +104,28 @@ module Naifa
             ),
             environment
           )
+        when :docker
+          if (options[environment][:username].presence || options[:username].presence).blank? ||
+              (options[environment][:database].presence || options[:database].presence).blank? ||
+              (options[environment][:path].presence || options[:path].presence).blank? ||
+              options[environment][:app_name].blank?
+
+            raise Thor::Error, "Restore docker environment #{environment} is not correctly configured"
+          end
+
+          command_line = build_backup_command(
+            'localhost',
+            options[environment][:username].presence || options[:username].presence,
+            options[environment][:database].presence || options[:database].presence,
+            File.join(
+              options[environment][:path].presence || options[:path].presence,
+              filename
+            )
+          )
+          Utils.docker_compose_exec_command(
+            options[environment][:app_name].presence,
+            command_line
+          )
         else
           raise Thor::Error, "Backup unsupported type"
         end
