@@ -80,7 +80,8 @@ module Naifa
             File.join(
               environment_settings[:path].presence || options[:path].presence,
               filename
-            )
+            ),
+            environment_settings[:backup_options]
           )
           Kernel.system(command_line)
         when :local
@@ -98,7 +99,8 @@ module Naifa
             File.join(
               environment_settings[:path].presence || options[:path].presence,
               filename
-            )
+            ),
+            environment_settings[:backup_options]
           )
           Kernel.system(command_line)
         when :heroku
@@ -129,7 +131,8 @@ module Naifa
             File.join(
               environment_settings[:path].presence || options[:path].presence,
               filename
-            )
+            ),
+            environment_settings[:backup_options]
           )
           Utils.docker_compose_exec_command(
             environment_settings[:app_name].presence,
@@ -173,7 +176,8 @@ module Naifa
             File.join(
               environment_settings[:path].presence || options[:path].presence,
               filename
-            )
+            ),
+            environment_settings[:restore_options]
           )
           Kernel.system(command_line)
         when :local
@@ -191,7 +195,8 @@ module Naifa
             File.join(
               environment_settings[:path] || options[:path],
               filename
-            )
+            ),
+            environment_settings[:restore_options]
           )
           Kernel.system(command_line)
         when :docker
@@ -210,7 +215,8 @@ module Naifa
             File.join(
               environment_settings[:path].presence || options[:path].presence,
               filename
-            )
+            ),
+            environment_settings[:restore_options]
           )
           Utils.docker_compose_exec_command(
             environment_settings[:app_name],
@@ -223,14 +229,18 @@ module Naifa
 
       private_class_method :_restore
 
-      def self.build_restore_command(host, username, database, filename)
-        "pg_restore --verbose --clean --no-acl --no-owner -h #{host} -U #{username} -d #{database} #{filename}"
+      def self.build_restore_command(host, username, database, filename, options={})
+        command = "pg_restore"
+        command << " #{options.join(' ')}" if options.present?
+        command << " -h #{host} -U #{username} -d #{database} #{filename}"
       end
 
       private_class_method :build_restore_command
 
-      def self.build_backup_command(host, username, database, filename)
-        "pg_dump -Fc -h #{host} -U #{username} -d #{database} > #{filename}"
+      def self.build_backup_command(host, username, database, filename, options={})
+        command = "pg_dump "
+        command << " #{options.join(' ')}" if options.present?
+        command << " -h #{host} -U #{username} -d #{database} > #{filename}"
       end
 
       private_class_method :build_backup_command

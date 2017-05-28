@@ -56,6 +56,13 @@ db:
         database: ''
         username: "\\$POSTGRES_USER"
         path: "/db_dumps/"
+        backup_options:
+        - "-Fc"
+        restore_options:
+        - "--verbose"
+        - "--clean"
+        - "--no-acl"
+        - "--no-owner"
     backup:
       environment: :staging
     restore:
@@ -158,6 +165,13 @@ db:
         database: ''
         username: "\\$POSTGRES_USER"
         path: "/db_dumps/"
+        backup_options:
+        - "-Fc"
+        restore_options:
+        - "--verbose"
+        - "--clean"
+        - "--no-acl"
+        - "--no-owner"
     backup:
       environment: :staging
     restore:
@@ -180,6 +194,13 @@ db_local:
         username: "\\$POSTGRES_USER"
         password: pass
         path: "/db_dumps/"
+        backup_options:
+        - "-Fc"
+        restore_options:
+        - "--verbose"
+        - "--clean"
+        - "--no-acl"
+        - "--no-owner"
     backup:
       environment: :staging
     restore:

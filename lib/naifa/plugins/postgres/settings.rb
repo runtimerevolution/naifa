@@ -14,12 +14,29 @@ module Naifa
             type: :heroku,
             remote: 'staging'
           },
+          remote_example: {
+            type: :remote,
+            host: '',
+            database: '',
+            username: '',
+            backup_options: ['-Fc'],
+            restore_options: ['--verbose', '--clean', '--no-acl', '--no-owner']
+          },
+          local_example: {
+            type: :local,
+            database: '',
+            username: '',
+            backup_options: ['-Fc'],
+            restore_options: ['--verbose', '--clean', '--no-acl', '--no-owner']
+          },
           development: {
             type: :docker,
             app_name: 'db',
             database: '',
             username: '\$POSTGRES_USER',
-            path: '/db_dumps/'
+            path: '/db_dumps/',
+            backup_options: ['-Fc'],
+            restore_options: ['--verbose', '--clean', '--no-acl', '--no-owner']
           }
         },
         backup: {
